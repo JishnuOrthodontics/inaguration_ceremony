@@ -419,17 +419,26 @@ function showRevealedScreen() {
 
 // ─── Tap Handling ────────────────────────────────────────────────────────────
 
+let lastTapEmitAt = 0;
+
 function handleTap(event) {
   if (isRevealed) return;
   if (!roomId) return;
 
-  event.preventDefault();
+  // Ignore non-primary mouse/pen buttons
+  if (typeof event.button === 'number' && event.button !== 0) return;
+
+  // Deduplicate: some browsers fire both pointerdown and touchstart
+  const now = Date.now();
+  if (now - lastTapEmitAt < 50) return;
+  lastTapEmitAt = now;
+
+  if (event.cancelable) event.preventDefault();
 
   // Initialize audio on first tap (browser policy)
   initAudio();
 
   // Track consecutive taps (reset if gap > 500ms)
-  const now = Date.now();
   if (now - lastTapTime > 500) {
     consecutiveTaps = 0;
   }
@@ -464,11 +473,14 @@ function handleTap(event) {
   playTapSound();
 
   // 6. Screen ripple effect
-  const touch = event.touches ? event.touches[0] : event;
+  const point = event.touches?.[0] || event.changedTouches?.[0] || event;
+  const rippleX = point.clientX ?? window.innerWidth / 2;
+  const rippleY = point.clientY ?? window.innerHeight / 2;
+
   const ripple = document.createElement('div');
   ripple.className = 'tap-ripple';
-  ripple.style.left = `${touch.clientX}px`;
-  ripple.style.top = `${touch.clientY}px`;
+  ripple.style.left = `${rippleX}px`;
+  ripple.style.top = `${rippleY}px`;
 
   // Color based on progress
   const hue = 270 - progress * 180;
@@ -481,11 +493,22 @@ function handleTap(event) {
   coreFlashIntensity = 1.0;
 }
 
-// Listen on the entire body for taps
-document.addEventListener('touchstart', handleTap, { passive: false });
-document.addEventListener('pointerdown', (e) => {
-  if (e.pointerType === 'mouse') handleTap(e);
-}, { passive: false });
+// Pointer events cover mouse + touch + pen on modern mobile browsers.
+// touchstart kept as fallback for older WebViews without PointerEvent.
+function onPointerDown(e) {
+  handleTap(e);
+}
+
+function onTouchStart(e) {
+  if (window.PointerEvent) return; // already handled via pointerdown
+  handleTap(e);
+}
+
+window.addEventListener('pointerdown', onPointerDown, { passive: false });
+window.addEventListener('touchstart', onTouchStart, { passive: false });
+// Extra canvas binding — some mobile WebViews don't bubble canvas touches reliably
+canvas.addEventListener('pointerdown', onPointerDown, { passive: false });
+canvas.addEventListener('touchstart', onTouchStart, { passive: false });
 
 let crystalPulseScale = 1.0;
 let coreFlashIntensity = 0;

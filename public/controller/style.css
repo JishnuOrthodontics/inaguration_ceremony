@@ -29,6 +29,9 @@ body {
   height: 100vh;
   height: 100dvh;
   z-index: 1;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 /* ─── Status Overlay ──────────────────────────────────────────── */
@@ -157,6 +160,7 @@ body {
   gap: 12px;
   animation: promptPulse 2s ease-in-out infinite;
   transition: opacity 0.5s ease;
+  pointer-events: none; /* never block taps on mobile */
 }
 
 .tap-prompt.hidden {
