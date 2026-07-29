@@ -61,6 +61,14 @@ app.use(express.json());
 app.get('/health', (req, res) => {
   res.status(200).json({ ok: true, uptime: process.uptime() });
 });
+app.get('/healthz', (req, res) => {
+  res.status(200).json({ ok: true, uptime: process.uptime() });
+});
+
+// Root → main stage (avoids "Cannot GET /" on the public URL)
+app.get('/', (req, res) => {
+  res.redirect('/main/');
+});
 
 // Get or create the active session
 app.get('/api/session', (req, res) => {
