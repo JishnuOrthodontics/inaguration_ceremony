@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Biomechanics Unveiled 2.0 — Grand Inauguration</title>
+  <meta name="description" content="National Workshop Inauguration — Biomechanics Unveiled 2.0 at Malabar Dental College">
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Import Map MUST be in head, before any module scripts -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.164.1/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.164.1/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <!-- Three.js Canvas -->
+  <canvas id="stage-canvas"></canvas>
+
+  <!-- QR Code Overlay -->
+  <div id="qr-overlay" class="overlay">
+    <div class="qr-card">
+      <div class="qr-glow"></div>
+      <h2>SCAN TO INAUGURATE</h2>
+      <div id="qr-container">
+        <div class="qr-loading">Generating...</div>
+      </div>
+      <p class="qr-subtitle">Scan with your phone to begin the ceremony</p>
+      <div class="waiting-indicator">
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span>Waiting for connection...</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- HUD / Progress -->
+  <div id="hud" class="hud hidden">
+    <div class="energy-bar-container">
+      <div class="energy-bar-track">
+        <div id="energy-bar-fill" class="energy-bar-fill"></div>
+      </div>
+      <span id="energy-text" class="energy-text">0%</span>
+    </div>
+    <div id="client-count" class="client-count">
+      <span class="pulse-dot"></span>
+      <span id="client-num">0</span> connected
+    </div>
+  </div>
+
+  <!-- Scripts (CDN) -->
+  <script src="https://unpkg.com/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <script type="module" src="main.js"></script>
+
+</body>
+</html>

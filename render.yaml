@@ -1,0 +1,9 @@
+# Free Render.com web service — Socket.io friendly
+services:
+  - type: web
+    name: dual-screen-3d-theater
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health

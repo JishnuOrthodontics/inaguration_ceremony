@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+  <title>Inauguration Controller — Biomechanics Unveiled 2.0</title>
+  <meta name="description" content="Tap to charge the inauguration energy">
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Import Map MUST be in head -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.164.1/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.164.1/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <!-- Three.js Canvas -->
+  <canvas id="controller-canvas"></canvas>
+
+  <!-- Status Overlay -->
+  <div id="status-overlay">
+    <div class="event-badge">
+      <span class="badge-icon">⚡</span>
+      BIOMECHANICS UNVEILED 2.0
+    </div>
+
+    <!-- Circular Progress Ring -->
+    <div class="progress-ring-container">
+      <svg class="progress-ring" viewBox="0 0 200 200">
+        <circle class="progress-ring-bg" cx="100" cy="100" r="90" />
+        <circle id="progress-circle" class="progress-ring-fill" cx="100" cy="100" r="90" />
+      </svg>
+      <div class="progress-center">
+        <span id="progress-percent" class="progress-number">0</span>
+        <span class="progress-symbol">%</span>
+      </div>
+    </div>
+
+    <p id="status-text" class="status-text">Tap anywhere to charge</p>
+    <p id="tap-count" class="tap-count">0 / 50</p>
+  </div>
+
+  <!-- Tap Instruction (pulses on idle) -->
+  <div id="tap-prompt" class="tap-prompt">
+    <div class="tap-icon">👆</div>
+    <span>TAP TO BEGIN</span>
+  </div>
+
+  <!-- Revealed Screen -->
+  <div id="revealed-screen" class="revealed-screen hidden">
+    <div class="revealed-content">
+      <div class="celebration-emoji">🎉</div>
+      <h1>Inaugurated!</h1>
+      <h2>Biomechanics Unveiled 2.0</h2>
+      <p>National Workshop — Mastering the Art of Tooth Movement</p>
+      <p class="revealed-subtitle">Malabar Dental College & Research Centre</p>
+      <a href="/assets/brochure.jpg" target="_blank" class="view-brochure-btn">
+        View Brochure
+      </a>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <script type="module" src="controller.js"></script>
+
+</body>
+</html>

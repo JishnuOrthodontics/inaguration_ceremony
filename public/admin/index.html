@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — 3D Theater Control Panel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0a0612;
+      color: #e0d8f0;
+      min-height: 100vh;
+      padding: 40px;
+    }
+
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #a855f7, #f59e0b);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.3);
+      margin-bottom: 40px;
+    }
+
+    /* ─── Cards ─────────────────────────────────────────── */
+
+    .card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 20px;
+      backdrop-filter: blur(10px);
+    }
+
+    .card h2 {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.4);
+      margin-bottom: 20px;
+    }
+
+    /* ─── Status Grid ──────────────────────────────────── */
+
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .status-item {
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .status-value {
+      font-size: 2rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      color: #fff;
+    }
+
+    .status-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: rgba(255, 255, 255, 0.3);
+      margin-top: 4px;
+    }
+
+    .status-value.revealed {
+      color: #22c55e;
+    }
+
+    .status-value.not-revealed {
+      color: #f59e0b;
+    }
+
+    /* ─── Progress Bar ─────────────────────────────────── */
+
+    .progress-container {
+      margin-top: 20px;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 4px;
+      background: linear-gradient(90deg, #6e3aff, #a855f7, #f59e0b);
+      transition: width 0.3s ease;
+    }
+
+    /* ─── Controls ─────────────────────────────────────── */
+
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .control-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    button {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 10px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      letter-spacing: 0.02em;
+      flex: 1;
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    .btn-reset {
+      background: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+    .btn-reset:hover { background: rgba(239, 68, 68, 0.25); }
+
+    .btn-reveal {
+      background: rgba(34, 197, 94, 0.15);
+      color: #22c55e;
+      border: 1px solid rgba(34, 197, 94, 0.2);
+    }
+    .btn-reveal:hover { background: rgba(34, 197, 94, 0.25); }
+
+    .btn-new {
+      background: rgba(168, 85, 247, 0.15);
+      color: #a855f7;
+      border: 1px solid rgba(168, 85, 247, 0.2);
+    }
+    .btn-new:hover { background: rgba(168, 85, 247, 0.25); }
+
+    /* ─── Slider ───────────────────────────────────────── */
+
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .slider-label {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.5);
+      white-space: nowrap;
+    }
+
+    input[type="range"] {
+      flex: 1;
+      -webkit-appearance: none;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #a855f7;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(168, 85, 247, 0.4);
+    }
+
+    .slider-value {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #fff;
+      min-width: 40px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ─── Links ────────────────────────────────────────── */
+
+    .links {
+      display: flex;
+      gap: 12px;
+    }
+
+    .link-card {
+      flex: 1;
+      display: block;
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      text-decoration: none;
+      color: #a855f7;
+      font-size: 0.8rem;
+      font-weight: 500;
+      text-align: center;
+      transition: all 0.2s ease;
+    }
+
+    .link-card:hover {
+      background: rgba(168, 85, 247, 0.1);
+      border-color: rgba(168, 85, 247, 0.2);
+    }
+
+    .link-card small {
+      display: block;
+      margin-top: 4px;
+      font-size: 0.65rem;
+      color: rgba(255, 255, 255, 0.25);
+    }
+
+    /* ─── Log ──────────────────────────────────────────── */
+
+    .log {
+      margin-top: 12px;
+      padding: 12px 16px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.7rem;
+      color: rgba(255, 255, 255, 0.4);
+      max-height: 150px;
+      overflow-y: auto;
+    }
+
+    .log .entry {
+      padding: 2px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    }
+
+    .log .entry:last-child { border-bottom: none; }
+
+    .log .time { color: rgba(168, 85, 247, 0.5); }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>🎭 Theater Control Panel</h1>
+    <p class="subtitle">Dual-Screen 3D Theater — Biomechanics Unveiled 2.0</p>
+
+    <!-- Status -->
+    <div class="card">
+      <h2>Session Status</h2>
+      <div class="status-grid">
+        <div class="status-item">
+          <div id="s-session" class="status-value" style="font-size: 1rem;">—</div>
+          <div class="status-label">Session ID</div>
+        </div>
+        <div class="status-item">
+          <div id="s-clients" class="status-value">0</div>
+          <div class="status-label">Connected Clients</div>
+        </div>
+        <div class="status-item">
+          <div id="s-taps" class="status-value">0</div>
+          <div class="status-label">Tap Count</div>
+        </div>
+        <div class="status-item">
+          <div id="s-revealed" class="status-value not-revealed">No</div>
+          <div class="status-label">Revealed</div>
+        </div>
+      </div>
+      <div class="progress-container">
+        <div class="progress-track">
+          <div id="s-progress" class="progress-fill" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="card">
+      <h2>Controls</h2>
+      <div class="controls">
+        <div class="control-row">
+          <button class="btn-reset" onclick="resetSession()">🔄 Reset Session</button>
+          <button class="btn-reveal" onclick="forceReveal()">🎉 Force Reveal</button>
+        </div>
+        <div class="control-row">
+          <button class="btn-new" onclick="newSession()">✨ New Session</button>
+        </div>
+        <div class="slider-row">
+          <span class="slider-label">Target Taps:</span>
+          <input type="range" id="target-slider" min="10" max="500" value="50" oninput="updateSlider()">
+          <span id="slider-value" class="slider-value">50</span>
+        </div>
+        <div class="control-row">
+          <button class="btn-new" onclick="applyTargetTaps()" style="flex: 0.5;">Apply</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="card">
+      <h2>Quick Links</h2>
+      <div class="links">
+        <a href="/main/" target="_blank" class="link-card">
+          🖥️ Main Screen
+          <small>Open in new tab</small>
+        </a>
+        <a href="/controller/" id="controller-link" target="_blank" class="link-card">
+          📱 Controller
+          <small>Open in new tab</small>
+        </a>
+      </div>
+    </div>
+
+    <!-- Log -->
+    <div class="card">
+      <h2>Event Log</h2>
+      <div id="log" class="log">
+        <div class="entry"><span class="time">[--:--:--]</span> Admin panel loaded</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <script>
+    const socket = io();
+    let sessionId = null;
+
+    // ── Fetch initial status ──
+    async function fetchStatus() {
+      try {
+        const res = await fetch('/api/admin/status');
+        const data = await res.json();
+        updateUI(data.session);
+      } catch (err) {
+        addLog('Error fetching status: ' + err.message);
+      }
+    }
+
+    function updateUI(session) {
+      if (!session) return;
+      sessionId = session.id;
+
+      document.getElementById('s-session').textContent = session.id;
+      document.getElementById('s-clients').textContent = session.connectedClients || 0;
+      document.getElementById('s-taps').textContent = session.tapCount;
+      document.getElementById('s-progress').style.width = `${Math.round(session.progress * 100)}%`;
+      document.getElementById('target-slider').value = session.targetTaps;
+      document.getElementById('slider-value').textContent = session.targetTaps;
+
+      const revealedEl = document.getElementById('s-revealed');
+      if (session.isRevealed) {
+        revealedEl.textContent = 'Yes ✅';
+        revealedEl.className = 'status-value revealed';
+      } else {
+        revealedEl.textContent = 'No';
+        revealedEl.className = 'status-value not-revealed';
+      }
+
+      // Update controller link
+      document.getElementById('controller-link').href = `/controller/?room=${session.id}`;
+    }
+
+    // ── Join session for live updates ──
+    async function joinSession() {
+      const res = await fetch('/api/session');
+      const data = await res.json();
+      sessionId = data.sessionId;
+      socket.emit('join-session', sessionId);
+      updateUI(data.session);
+      addLog(`Joined session: ${sessionId}`);
+    }
+
+    // ── Socket listeners ──
+    socket.on('energy-update', (data) => {
+      document.getElementById('s-taps').textContent = data.tapCount;
+      document.getElementById('s-progress').style.width = `${Math.round(data.progress * 100)}%`;
+    });
+
+    socket.on('revealed', () => {
+      const el = document.getElementById('s-revealed');
+      el.textContent = 'Yes ✅';
+      el.className = 'status-value revealed';
+      addLog('🎉 REVEALED!');
+    });
+
+    socket.on('reset', () => {
+      fetchStatus();
+      addLog('🔄 Session reset');
+    });
+
+    socket.on('client-count', (data) => {
+      document.getElementById('s-clients').textContent = data.count;
+    });
+
+    // ── Actions ──
+    async function resetSession() {
+      const res = await fetch('/api/admin/reset', { method: 'POST' });
+      const data = await res.json();
+      updateUI(data.session);
+      addLog('Reset session');
+    }
+
+    async function forceReveal() {
+      const res = await fetch('/api/admin/force-reveal', { method: 'POST' });
+      const data = await res.json();
+      updateUI(data.session);
+      addLog('Force revealed!');
+    }
+
+    async function newSession() {
+      const targetTaps = parseInt(document.getElementById('target-slider').value);
+      const res = await fetch('/api/admin/new-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetTaps })
+      });
+      const data = await res.json();
+
+      // Rejoin new session
+      socket.emit('join-session', data.session.id);
+      updateUI(data.session);
+      addLog(`New session created: ${data.session.id}`);
+    }
+
+    function updateSlider() {
+      document.getElementById('slider-value').textContent = document.getElementById('target-slider').value;
+    }
+
+    async function applyTargetTaps() {
+      const targetTaps = parseInt(document.getElementById('target-slider').value);
+      const res = await fetch('/api/admin/target-taps', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetTaps })
+      });
+      const data = await res.json();
+      updateUI(data.session);
+      addLog(`Target taps updated to ${targetTaps}`);
+    }
+
+    // ── Log helper ──
+    function addLog(msg) {
+      const log = document.getElementById('log');
+      const time = new Date().toLocaleTimeString();
+      const entry = document.createElement('div');
+      entry.className = 'entry';
+      entry.innerHTML = `<span class="time">[${time}]</span> ${msg}`;
+      log.prepend(entry);
+    }
+
+    // ── Poll status every 3s for live data ──
+    setInterval(fetchStatus, 3000);
+
+    // ── Initialize ──
+    joinSession();
+  </script>
+
+</body>
+</html>
