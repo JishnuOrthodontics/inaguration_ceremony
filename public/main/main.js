@@ -696,7 +696,11 @@ function stopCeremonyMusic() {
   revealMusicPlaying = false;
 }
 
-function playRevealFanfare() {
+function playClimaxMusic() {
+  if (revealMusicPlaying) {
+    if (revealMusic) revealMusic.volume = MUSIC_REVEAL_VOLUME;
+    return;
+  }
   initCeremonyMusic();
 
   // Fade out / stop the low-pitch pooling bed
@@ -705,7 +709,7 @@ function playRevealFanfare() {
     chargeMusic.currentTime = 0;
   }
 
-  // Inauguration moment: higher-pitch second half
+  // From 90% energy: higher-pitch second half builds into inauguration
   revealMusic.currentTime = 0;
   revealMusic.volume = MUSIC_REVEAL_VOLUME;
   revealMusic.play().catch(() => {});
@@ -801,8 +805,6 @@ function playRevealHit() {
   shimmerGain.connect(audioCtx.destination);
   shimmerOsc.start();
   shimmerOsc.stop(now + 3);
-
-  playRevealFanfare();
 }
 
 function playCurtainRustle() {
@@ -893,6 +895,11 @@ socket.on('energy-update', (data) => {
     startCeremonyMusic(MUSIC_CHARGE_VOLUME);
   } else if (chargeMusic && !isRevealed && !revealMusicPlaying) {
     setChargeVolume(MUSIC_CHARGE_VOLUME);
+  }
+
+  // At 90% energy, switch to the higher-pitch second half
+  if (data.progress >= 0.9 && !revealMusicPlaying) {
+    playClimaxMusic();
   }
 
   // Update HUD

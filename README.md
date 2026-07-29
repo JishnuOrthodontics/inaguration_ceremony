@@ -46,7 +46,7 @@ Joining alone does not start motion on the big screen — the **first tap** does
 | `/assets/brochure.jpg` | Stage reveal texture (logo image) |
 | `/assets/Biomechanics-Unveiled-2.0-Brochure.pdf` | Downloadable brochure (View Brochure button) |
 | `/assets/inaugural-charge.mp3` | Low-pitch first half — plays while tapping / pooling |
-| `/assets/inaugural-reveal.mp3` | Higher-pitch second half — starts at curtain reveal |
+| `/assets/inaugural-reveal.mp3` | Higher-pitch second half — starts at **90%** energy |
 | `/assets/inaugural-fanfare.mp3` | Full source track (split into the two parts above) |
 | `/assets/dept-orthodontics-logo.png` | Left stage wing — Dept of Orthodontics |
 | `/assets/malabar-dental-college-logo.png` | Right stage wing — Malabar Dental College |
@@ -253,7 +253,7 @@ No login — do not share `/admin` publicly beyond operators.
 
 1. Hard-refresh projector (`Ctrl+F5`) after deploys or brochure changes.  
 2. Free Render sleeps after ~15 min idle — wake `/main/` before guests arrive.  
-3. On the projector, click **Enable ceremony music** once before the ceremony (browser autoplay rules). A **low-pitch** bed loops while guests tap; at reveal the **higher-pitch** second half takes over — no separate soundtrack needed.  
+3. On the projector, click **Enable ceremony music** once before the ceremony (browser autoplay rules). A **low-pitch** bed loops while guests tap; from **90%** energy the **higher-pitch** second half takes over — no separate soundtrack needed.  
 4. Socket.io is **local** (`/vendor/`); Three.js / GSAP / fonts still use CDN when available.  
 5. `connectedClients` counts all sockets (main + admin + phones).  
 6. Keep the projector page open for the whole ceremony so the QR stays in sync.
