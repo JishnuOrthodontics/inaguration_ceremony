@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Join Inauguration — Biomechanics Unveiled 2.0</title>
+  <meta name="description" content="Enter the ceremony code or join the live session">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="join-shell">
+    <p class="badge">Biomechanics Unveiled 2.0</p>
+    <h1>Join the ceremony</h1>
+    <p class="lede">Can't scan the QR? Enter the code from the screen, or join the live room in one tap.</p>
+
+    <form id="join-form" class="join-form" autocomplete="off">
+      <label for="code-input">Ceremony code</label>
+      <input
+        id="code-input"
+        name="code"
+        type="text"
+        inputmode="text"
+        autocapitalize="characters"
+        autocomplete="off"
+        spellcheck="false"
+        placeholder="e.g. BU2-A1B2C3D4"
+        maxlength="20"
+      />
+      <button type="submit" class="btn-primary">Join with code</button>
+    </form>
+
+    <div class="divider"><span>or</span></div>
+
+    <button type="button" id="join-live" class="btn-secondary">Join live ceremony</button>
+
+    <p id="status" class="status" role="status"></p>
+  </main>
+
+  <script src="join.js"></script>
+</body>
+</html>

@@ -84,6 +84,7 @@ app.get('/api/qr/:sessionId', async (req, res) => {
     const protocol = req.headers['x-forwarded-proto'] || req.protocol;
     const host = req.headers['x-forwarded-host'] || req.headers.host;
     const controllerUrl = `${protocol}://${host}/controller/?room=${sessionId}`;
+    const joinPageUrl = `${protocol}://${host}/join/`;
 
     const qrDataUrl = await QRCode.toDataURL(controllerUrl, {
       width: 400,
@@ -95,11 +96,45 @@ app.get('/api/qr/:sessionId', async (req, res) => {
       errorCorrectionLevel: 'M'
     });
 
-    res.json({ qr: qrDataUrl, url: controllerUrl });
+    res.json({
+      qr: qrDataUrl,
+      url: controllerUrl,
+      code: sessionId,
+      joinUrl: joinPageUrl
+    });
   } catch (err) {
     console.error('[QR] Error:', err);
     res.status(500).json({ error: 'Failed to generate QR code' });
   }
+});
+
+// Resolve a typed join code → controller URL (or active session if no code)
+app.get('/api/join/resolve', (req, res) => {
+  const raw = (req.query.code || '').toString().trim().toUpperCase().replace(/\s+/g, '');
+  const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+  const host = req.headers['x-forwarded-host'] || req.headers.host;
+
+  let session = null;
+  if (raw) {
+    if (sessions[raw]) {
+      session = sessions[raw];
+    } else {
+      const withPrefix = raw.startsWith('BU2-') ? raw : `BU2-${raw}`;
+      if (sessions[withPrefix]) session = sessions[withPrefix];
+    }
+    if (!session) {
+      return res.status(404).json({ error: 'Code not found — check the big screen' });
+    }
+  } else {
+    session = getOrCreateSession();
+  }
+
+  const controllerUrl = `${protocol}://${host}/controller/?room=${session.id}`;
+  res.json({
+    sessionId: session.id,
+    code: session.id,
+    url: controllerUrl
+  });
 });
 
 // Admin: Reset session

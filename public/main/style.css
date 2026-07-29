@@ -65,7 +65,7 @@ body {
   top: auto;
   left: auto;
   right: 28px;
-  bottom: 110px;
+  bottom: 100px;
   width: auto;
   height: auto;
   align-items: flex-end;
@@ -102,6 +102,30 @@ body {
   display: block;
 }
 
+.overlay.docked .join-alt {
+  display: block;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(201, 162, 39, 0.2);
+}
+
+.overlay.docked .join-alt-title {
+  font-size: 0.55rem;
+  letter-spacing: 0.12em;
+  margin-bottom: 4px;
+}
+
+.overlay.docked .join-code-line {
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+}
+
+.overlay.docked .join-link-line {
+  font-size: 0.55rem;
+  margin-top: 4px;
+  opacity: 0.75;
+}
+
 .qr-dock-label {
   display: none;
   font-family: 'Cinzel', serif;
@@ -124,7 +148,6 @@ body {
   width: 128px;
   height: 128px;
 }
-
 
 .qr-card {
   position: relative;
@@ -202,9 +225,53 @@ body {
 .qr-subtitle {
   font-size: 0.85rem;
   color: rgba(245, 239, 230, 0.45);
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   font-weight: 300;
   letter-spacing: 0.05em;
+}
+
+.join-alt {
+  margin: 0 auto 18px;
+  padding: 12px 16px;
+  max-width: 320px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(201, 162, 39, 0.15);
+}
+
+.join-alt-title {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(232, 213, 163, 0.55);
+  margin-bottom: 6px;
+}
+
+.join-code-line {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--gold-soft);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.08em;
+}
+
+#join-code {
+  font-family: 'Courier New', Courier, monospace;
+  color: #fff;
+  letter-spacing: 0.12em;
+}
+
+.join-link-line {
+  margin-top: 6px;
+  font-size: 0.72rem;
+  color: rgba(245, 239, 230, 0.4);
+  word-break: break-all;
+}
+
+#join-link-host {
+  color: rgba(232, 213, 163, 0.85);
+  font-weight: 500;
 }
 
 .waiting-indicator {

@@ -25,9 +25,10 @@ Hosted on **Render** (free web service). Auto-deploys on push to `main`.
 
 1. **Projector** opens `/main/` — 3D theater stage with full-screen QR (“SCAN TO INAUGURATE”).
 2. **Delegates** scan the QR → phone opens `/controller/?room={sessionId}`.
-3. **First tap** starts the stage ceremony: energy HUD appears, curtains begin opening, and the QR **docks to a corner** so late guests can still join.
-4. **All phones share one pool** — every later joiner’s taps still count toward the same target.
-5. When **total taps ≥ target** (default **50**), the stage runs the reveal sequence (curtains bunch open, brochure rises, confetti); the corner QR hides for a clean brochure moment.
+3. **Can't scan?** Use the **code** under the QR, or open **`/join`** on the phone (enter code, or tap “Join live ceremony”).
+4. **First tap** starts the stage ceremony: energy HUD appears, curtains begin opening, and the QR **docks to a corner** (still showing code + `/join`) so late guests can join.
+5. **All phones share one pool** — every later joiner’s taps still count toward the same target.
+6. When **total taps ≥ target** (default **50**), the stage runs the reveal sequence; the corner QR hides for a clean brochure moment.
 
 Joining alone does not start motion on the big screen — the **first tap** does.
 
@@ -40,6 +41,7 @@ Joining alone does not start motion on the big screen — the **first tap** does
 | `/` | Redirects to `/main/` |
 | `/main/` | Projector / big-screen 3D theater |
 | `/controller/?room={id}` | Mobile tap controller |
+| `/join/` | Join without QR (enter code or join live) |
 | `/admin/` | Operator control panel |
 | `/assets/brochure.jpg` | Revealed brochure image |
 | `/vendor/socket.io.min.js` | Local Socket.io client (no CDN) |
@@ -171,7 +173,8 @@ Use a phone hotspot if college Wi‑Fi blocks device-to-device traffic.
 | `GET` | `/` | Redirect to `/main/` |
 | `GET` | `/health` · `/healthz` | Liveness |
 | `GET` | `/api/session` | Get or create the active session |
-| `GET` | `/api/qr/:sessionId` | QR data URL + controller join URL |
+| `GET` | `/api/qr/:sessionId` | QR data URL + controller URL + join code |
+| `GET` | `/api/join/resolve?code=` | Resolve typed code (or active session) → controller URL |
 
 ### Admin (no auth)
 

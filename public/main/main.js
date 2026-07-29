@@ -749,6 +749,20 @@ async function initSession() {
     const qrContainer = document.getElementById('qr-container');
     qrContainer.innerHTML = `<img src="${qrData.qr}" alt="Scan to join">`;
 
+    // Join-without-QR helpers (code + /join link)
+    const codeEl = document.getElementById('join-code');
+    const linkEl = document.getElementById('join-link-host');
+    if (codeEl) codeEl.textContent = qrData.code || sessionId;
+    if (linkEl) {
+      try {
+        const joinUrl = qrData.joinUrl || `${window.location.origin}/join/`;
+        const u = new URL(joinUrl);
+        linkEl.textContent = `${u.host}/join`;
+      } catch {
+        linkEl.textContent = '…/join';
+      }
+    }
+
     console.log(`[Session] Joined: ${sessionId}`);
     console.log(`[Session] Controller URL: ${qrData.url}`);
   } catch (err) {
