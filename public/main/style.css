@@ -305,6 +305,38 @@ body {
   40% { transform: scale(1); opacity: 1; }
 }
 
+.enable-music-btn {
+  margin-top: 18px;
+  padding: 10px 20px;
+  border: 1px solid rgba(201, 162, 39, 0.45);
+  border-radius: 999px;
+  background: rgba(201, 162, 39, 0.12);
+  color: rgba(245, 239, 230, 0.9);
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+}
+
+.enable-music-btn:hover {
+  background: rgba(201, 162, 39, 0.22);
+  border-color: rgba(201, 162, 39, 0.7);
+}
+
+.enable-music-btn.enabled {
+  opacity: 0.55;
+  pointer-events: none;
+  border-color: rgba(120, 180, 120, 0.45);
+  background: rgba(80, 140, 90, 0.18);
+}
+
+.overlay.docked .enable-music-btn {
+  display: none;
+}
+
 /* ─── HUD ─────────────────────────────────────────────────────── */
 
 .hud {

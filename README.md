@@ -45,6 +45,7 @@ Joining alone does not start motion on the big screen — the **first tap** does
 | `/admin/` | Operator control panel |
 | `/assets/brochure.jpg` | Stage reveal texture (logo image) |
 | `/assets/Biomechanics-Unveiled-2.0-Brochure.pdf` | Downloadable brochure (View Brochure button) |
+| `/assets/inaugural-fanfare.mp3` | Built-in inaugural ceremony music (projector) |
 | `/vendor/socket.io.min.js` | Local Socket.io client (no CDN) |
 | `/health` · `/healthz` | Health checks for Render |
 
@@ -248,9 +249,10 @@ No login — do not share `/admin` publicly beyond operators.
 
 1. Hard-refresh projector (`Ctrl+F5`) after deploys or brochure changes.  
 2. Free Render sleeps after ~15 min idle — wake `/main/` before guests arrive.  
-3. Socket.io is **local** (`/vendor/`); Three.js / GSAP / fonts still use CDN when available.  
-4. `connectedClients` counts all sockets (main + admin + phones).  
-5. Keep the projector page open for the whole ceremony so the QR stays in sync.
+3. On the projector, click **Enable ceremony music** once before the ceremony (browser autoplay rules). Soft music plays while tapping; the brass fanfare swells at reveal — no separate soundtrack needed.  
+4. Socket.io is **local** (`/vendor/`); Three.js / GSAP / fonts still use CDN when available.  
+5. `connectedClients` counts all sockets (main + admin + phones).  
+6. Keep the projector page open for the whole ceremony so the QR stays in sync.
 
 ---
 
@@ -267,3 +269,5 @@ npm run dev # same
 
 Built for the live inauguration of **Biomechanics Unveiled 2.0**.  
 Package name: `dual-screen-3d-theater`.
+
+Ceremony music: *The Rule* by Kevin MacLeod (incompetech.com), licensed under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/).
