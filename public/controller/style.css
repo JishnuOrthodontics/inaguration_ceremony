@@ -262,6 +262,13 @@ body.no-3d {
   margin-bottom: 8px;
 }
 
+.revealed-thanks {
+  font-size: clamp(0.95rem, 4vw, 1.1rem) !important;
+  font-weight: 400 !important;
+  color: rgba(255, 255, 255, 0.75) !important;
+  margin-bottom: 20px !important;
+}
+
 .revealed-content h2 {
   font-size: clamp(0.95rem, 4vw, 1.1rem);
   font-weight: 600;
