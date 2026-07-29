@@ -391,7 +391,7 @@ body {
 
 .hud {
   position: fixed;
-  bottom: 40px;
+  bottom: 52px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 50;
