@@ -6,6 +6,21 @@ Delegates scan a QR code on the projected main screen, tap their phones to charg
 
 ---
 
+## Live production
+
+| | URL |
+|--|-----|
+| **App (root → main)** | https://inaguration-ceremony.onrender.com/ |
+| **Projector** | https://inaguration-ceremony.onrender.com/main/ |
+| **Admin** | https://inaguration-ceremony.onrender.com/admin/ |
+| **GitHub** | https://github.com/JishnuOrthodontics/inaguration_ceremony |
+
+Hosted on **Render** (free web service). Auto-deploys on push to `main`.
+
+**Before the ceremony:** open `/main/` about 5 minutes early so the free instance wakes and stays active while guests tap.
+
+---
+
 ## Ceremony flow
 
 1. **Projector** opens `/main/` — 3D theater stage with QR overlay (“SCAN TO INAUGURATE”).
@@ -20,12 +35,15 @@ Joining alone does not start motion on the big screen — the **first tap** does
 
 ## Surfaces
 
-| URL | Role |
-|-----|------|
+| Path | Role |
+|------|------|
+| `/` | Redirects to `/main/` |
 | `/main/` | Projector / big-screen 3D theater |
 | `/controller/?room={id}` | Mobile tap controller |
 | `/admin/` | Operator control panel |
 | `/assets/brochure.jpg` | Revealed brochure image |
+| `/vendor/socket.io.min.js` | Local Socket.io client (no CDN) |
+| `/health` · `/healthz` | Health checks for Render |
 
 ---
 
@@ -35,10 +53,12 @@ Joining alone does not start motion on the big screen — the **first tap** does
 |-------|------------|
 | Server | Node.js, Express, Socket.io |
 | Session IDs / QR | `uuid`, `qrcode` |
-| Main / controller 3D | Three.js **0.164.1** (CDN import maps) |
+| Realtime client | Socket.io served from `/vendor/` (works when CDNs are blocked on mobile) |
+| Main / controller 3D | Three.js **0.164.1** (CDN; optional on phones) |
 | Main animation | GSAP **3.12.5** (CDN) |
 | Persistence | In-memory only (no database) |
 | Auth | None |
+| Hosting | Render free web service |
 
 ---
 
@@ -46,22 +66,33 @@ Joining alone does not start motion on the big screen — the **first tap** does
 
 ```
 .
-├── server.js                 # Express + Socket.io hub
+├── server.js                      # Express + Socket.io hub
 ├── package.json
+├── render.yaml                    # Render free-tier blueprint
+├── README.md
 └── public/
+    ├── vendor/
+    │   └── socket.io.min.js       # Bundled client (mobile-safe)
     ├── assets/
-    │   └── brochure.jpg      # Reveal texture + download
+    │   └── brochure.jpg
     ├── main/
     │   ├── index.html
-    │   ├── main.js           # Three.js stage, curtains, reveal
+    │   ├── main.js                # 3D stage, velvet curtains, reveal
     │   └── style.css
     ├── controller/
     │   ├── index.html
-    │   ├── controller.js     # Crystal UI + taps
+    │   ├── controller-core.js     # Taps + Socket.io (always loads)
+    │   ├── controller.js          # Optional 3D crystal visuals
     │   └── style.css
     └── admin/
-        └── index.html        # Reset / force reveal / targets
+        └── index.html
 ```
+
+### Mobile controller design
+
+- **`controller-core.js`** — plain script: join room, emit taps, update % UI. Does **not** depend on Three.js.
+- **`#tap-surface`** — full-screen tap button so phones register touches reliably.
+- **`controller.js`** — optional 3D crystal; if import maps / Three.js fail on a phone, taps still work.
 
 ---
 
@@ -79,108 +110,55 @@ Optional env:
 - `PORT` — port (default `3000`)
 - `HOST` — bind address (default `0.0.0.0`)
 
-### Useful URLs
+### Local URLs
 
 - Main: http://localhost:3000/main/
 - Admin: http://localhost:3000/admin/
-- Controller (example): http://localhost:3000/controller/?room=BU2-XXXXXXXX
-
-For a real hall, phones must reach the host over LAN. The QR is built from the request `Host` / `X-Forwarded-*` headers so it points at the machine serving the page.
+- Controller: http://localhost:3000/controller/?room=BU2-XXXXXXXX
 
 ---
 
-## Go live (free) — real projector + phones
+## Go live options
 
-You have two free options. For a hall inauguration, **Option A (same Wi‑Fi)** is usually best.
+### A — Public URL (current production)
 
-### Option A — Same Wi‑Fi / LAN (recommended for the event)
+Already deployed:
 
-**Cost:** ₹0 · **Latency:** lowest · **No cloud account needed**
+- Repo: `JishnuOrthodontics/inaguration_ceremony`
+- Service: Render free → `https://inaguration-ceremony.onrender.com`
 
-Phones and the laptop stay on the **same Wi‑Fi** (college network or a phone hotspot).
+Push to `main` to redeploy. Health check: `/health` or `/healthz`.
 
-1. On the laptop connected to the projector:
-   ```bash
-   npm install
-   npm start
-   ```
-2. Find the laptop’s LAN IP (Windows PowerShell):
-   ```powershell
-   ipconfig
-   ```
-   Look for `IPv4 Address` under the active Wi‑Fi adapter, e.g. `192.168.1.42`.
-3. On the projector browser open:
-   ```
-   http://192.168.1.42:3000/main/
-   ```
-   **Not** `localhost` — phones cannot open `localhost` on your PC.
-4. Scan the on-screen QR with phones. It will already point at  
-   `http://192.168.1.42:3000/controller/?room=...`
-5. Admin (operator phone/laptop):  
-   `http://192.168.1.42:3000/admin/`
+### B — Same Wi‑Fi / LAN (backup for the hall)
 
-**Checklist before guests arrive**
+If the cloud is slow or offline:
 
-- [ ] Laptop + phones on the same Wi‑Fi
-- [ ] Windows Firewall allows Node on port **3000** (Private networks)
-- [ ] Open `/main/` once and confirm QR loads
-- [ ] Test one phone tap → energy bar moves on the big screen
-- [ ] Keep the laptop awake (disable sleep); keep `npm start` running
-- [ ] Internet available for CDN assets (Three.js / GSAP / fonts) — or venue Wi‑Fi with internet
+1. `npm start` on the projector laptop  
+2. Open `http://{LAN-IP}:3000/main/` (not `localhost`)  
+3. Phones on the same Wi‑Fi scan the QR  
 
-If the college Wi‑Fi blocks device-to-device traffic, create a **mobile hotspot** from a phone, connect laptop + guest phones to that hotspot, and use the laptop’s hotspot IP instead.
+Use a phone hotspot if college Wi‑Fi blocks device-to-device traffic.
+
+### Do not use
+
+**Netlify / Vercel / GitHub Pages** — static only; they cannot run this Socket.io server.
 
 ---
 
-### Option B — Free public URL (Render.com)
+## Event-day checklist
 
-Use this if phones cannot join the same LAN, or you want an `https://…onrender.com` link.
-
-**Cost:** Free tier · Supports Socket.io / WebSockets
-
-1. Put the project on **GitHub** (public or private).
-2. Sign up at [https://render.com](https://render.com) (free).
-3. **New → Web Service** → connect the repo.
-4. Settings:
-   - **Runtime:** Node
-   - **Build command:** `npm install`
-   - **Start command:** `npm start`
-   - **Instance type:** Free
-   - **Health check path:** `/health`
-5. Deploy. You get a URL like `https://dual-screen-3d-theater.onrender.com`.
-6. Projector: `https://YOUR-APP.onrender.com/main/`  
-   Phones scan the QR (HTTPS works from any network with internet).
-
-A `render.yaml` file is included so Render can pick up the free web service config automatically if you use Blueprint.
-
-**Important free-tier caveats**
-
-| Issue | What to do |
-|-------|------------|
-| Sleeps after ~15 min idle | Open the site ~5 minutes before the ceremony so it wakes |
-| Cold start ~30–60s | Wait for the first load; then keep a tab open on `/main/` |
-| Restart clears sessions | Don’t restart mid-ceremony; use Admin **Reset** instead |
-| No auth on `/admin` | Don’t share the admin URL publicly |
-
-**Wake-up tip:** Before guests enter, open `/main/` and `/admin/` on the operator device and leave them connected.
-
----
-
-### What not to use (for this app)
-
-Static hosts like **Netlify / Vercel / GitHub Pages** are free but **cannot** run this Socket.io Node server. You need a long-lived Node process (LAN laptop or Render/Fly/Railway-style host).
-
----
-
-### Event-day recommended setup
+- [ ] Open https://inaguration-ceremony.onrender.com/main/ ~5 min early (wake free tier)
+- [ ] Confirm QR appears (not stuck on “Generating…”)
+- [ ] Test **one phone**: scan QR → tap → main energy bar moves
+- [ ] Open Admin in a second tab/phone for Reset / Force Reveal
+- [ ] Keep projector tab open for the whole ceremony
+- [ ] After any **New Session**, refresh `/main/` so the QR matches
 
 | Role | Device | URL |
 |------|--------|-----|
 | Stage | Laptop → HDMI projector | `/main/` |
-| Operator | Second laptop or phone | `/admin/` |
-| Delegates | Phones | Scan QR |
-
-Prefer **Option A** for the live inauguration. Use **Option B** if you need internet-wide access.
+| Operator | Second device | `/admin/` |
+| Delegates | Phones | Scan on-screen QR |
 
 ---
 
@@ -190,6 +168,8 @@ Prefer **Option A** for the live inauguration. Use **Option B** if you need inte
 
 | Method | Path | Purpose |
 |--------|------|---------|
+| `GET` | `/` | Redirect to `/main/` |
+| `GET` | `/health` · `/healthz` | Liveness |
 | `GET` | `/api/session` | Get or create the active session |
 | `GET` | `/api/qr/:sessionId` | QR data URL + controller join URL |
 
@@ -198,10 +178,10 @@ Prefer **Option A** for the live inauguration. Use **Option B** if you need inte
 | Method | Path | Purpose |
 |--------|------|---------|
 | `GET` | `/api/admin/status` | Live session status |
-| `POST` | `/api/admin/reset` | Clear taps / un-reveal / notify clients |
+| `POST` | `/api/admin/reset` | Clear taps / un-reveal |
 | `POST` | `/api/admin/force-reveal` | Jump to reveal |
 | `POST` | `/api/admin/target-taps` | Body: `{ "targetTaps": number }` |
-| `POST` | `/api/admin/new-session` | Body: `{ "targetTaps"?: number }` — new room ID |
+| `POST` | `/api/admin/new-session` | Body: `{ "targetTaps"?: number }` |
 
 ### Session shape
 
@@ -222,63 +202,63 @@ Prefer **Option A** for the live inauguration. Use **Option B** if you need inte
 
 ## Socket.io events
 
-Clients emit `join-session` with the session id, then:
-
 | Event | Direction | Meaning |
 |-------|-----------|---------|
+| `join-session` | client → server | Join room (missing rooms fall back to active) |
+| `session-redirect` | server → client | Joined a different live room after restart |
 | `state-update` | server → client | Full sync on join / admin changes |
-| `tap` | controller → server | Count a tap (rate-limited to **5 / sec / socket**) |
+| `tap` | controller → server | Count a tap (max **5 / sec / socket**) |
 | `energy-update` | server → room | `{ tapCount, progress }` |
 | `revealed` | server → room | Target reached (or force reveal) |
 | `reset` | server → room | Admin reset |
 | `client-count` | server → room | Connected sockets in the room |
-| `error` | server → client | e.g. unknown session |
+| `error` | server → client | Connection / session errors |
+
+After Render sleep or redeploy, in-memory sessions are cleared. Controllers automatically join the **active** live room (`session-redirect`). Always prefer scanning the **current** QR on the projector.
 
 ---
 
 ## Admin panel
 
-Use `/admin/` during the ceremony to:
+- Live session ID, taps, progress, connected clients  
+- **Reset** — rehearse again (same session ID)  
+- **Force Reveal** — skip waiting for taps  
+- **New Session** — new ID (refresh main for a new QR)  
+- **Target Taps** slider (10–500)  
 
-- Watch session ID, tap count, progress, connected clients
-- **Reset** — rehearse again without a new QR (same session)
-- **Force Reveal** — skip waiting for taps
-- **New Session** — new ID (refresh main screen so the QR updates)
-- Change **Target Taps** (10–500) and Apply
-
-There is **no login**. Do not expose `/admin` on a public internet without protection.
+No login — do not share `/admin` publicly beyond operators.
 
 ---
 
 ## Visual design (main stage)
 
-- Warm theatrical palette: charcoal / burgundy hall, amber–gold lighting, cream columns, crimson velvet
-- Custom shader curtains: vertical pleats, gathered rod, wavy hem, bunch-open (not flat slide)
-- Brochure mesh uses `/assets/brochure.jpg`
-- HUD energy bar + connected count after first tap
+- Warm theatrical palette: charcoal / burgundy hall, amber–gold lighting, cream columns, crimson velvet  
+- Shader curtains: vertical pleats, gathered rod, wavy hem, bunch-open (not a flat slide)  
+- Brochure mesh from `/assets/brochure.jpg`  
+- HUD energy bar + connected count after first tap  
 
 ---
 
 ## Operational notes
 
-1. **Hard-refresh** the projector (`Ctrl+F5`) after code or brochure asset changes.
-2. After **New Session**, reload `/main/` so the QR matches the new room.
-3. Restarting Node **clears all sessions** (RAM only).
-4. Three.js / GSAP / fonts load from CDNs — confirm internet (or vendor locally) for offline venues.
-5. `connectedClients` counts every socket in the room (main + admin + phones), not phones only.
-6. Late join on **controller** shows the celebration UI if already revealed; **main** currently keeps the QR overlay unless a live `revealed` / tap flow has already run — prefer keeping the projector page open for the whole ceremony.
+1. Hard-refresh projector (`Ctrl+F5`) after deploys or brochure changes.  
+2. Free Render sleeps after ~15 min idle — wake `/main/` before guests arrive.  
+3. Socket.io is **local** (`/vendor/`); Three.js / GSAP / fonts still use CDN when available.  
+4. `connectedClients` counts all sockets (main + admin + phones).  
+5. Keep the projector page open for the whole ceremony so the QR stays in sync.
 
 ---
 
 ## Scripts
 
-```json
-"start": "node server.js",
-"dev": "node server.js"
+```bash
+npm start   # node server.js
+npm run dev # same
 ```
 
 ---
 
 ## License / event
 
-Built for the live inauguration of **Biomechanics Unveiled 2.0**. Package name: `dual-screen-3d-theater`.
+Built for the live inauguration of **Biomechanics Unveiled 2.0**.  
+Package name: `dual-screen-3d-theater`.
