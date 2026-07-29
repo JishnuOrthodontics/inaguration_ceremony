@@ -34,9 +34,10 @@ let cameraShakeIntensity = 0;
 let audioCtx = null;
 let droneOsc = null;
 let droneGain = null;
-let ceremonyMusic = null;
+let chargeMusic = null;
+let revealMusic = null;
 let musicStarted = false;
-let musicReady = false;
+let revealMusicPlaying = false;
 
 // ─── Three.js Setup ──────────────────────────────────────────────────────────
 
@@ -616,64 +617,100 @@ scene.add(confettiMesh);
 
 let confettiActive = false;
 
-// ─── Audio System (Web Audio + inaugural ceremony track) ─────────────────────
-// Track: "The Rule" by Kevin MacLeod (incompetech.com) — CC BY 3.0
+// ─── Audio System (Web Audio + two-part inaugural track) ─────────────────────
+// Source: "The Rule" by Kevin MacLeod (incompetech.com) — CC BY 3.0
+// Split: low-pitch first half (pooling) → higher-pitch second half (reveal)
 
 const MUSIC_IDLE_VOLUME = 0.28;
 const MUSIC_CHARGE_VOLUME = 0.38;
 const MUSIC_REVEAL_VOLUME = 0.72;
 
-function initCeremonyMusic() {
-  if (ceremonyMusic) return ceremonyMusic;
-  ceremonyMusic = new Audio('/assets/inaugural-fanfare.mp3');
-  ceremonyMusic.loop = true;
-  ceremonyMusic.preload = 'auto';
-  ceremonyMusic.volume = MUSIC_IDLE_VOLUME;
-  ceremonyMusic.addEventListener('canplaythrough', () => {
-    musicReady = true;
-  }, { once: true });
-  return ceremonyMusic;
+function createMusicTrack(src, { loop = false, volume = MUSIC_IDLE_VOLUME } = {}) {
+  const audio = new Audio(src);
+  audio.loop = loop;
+  audio.preload = 'auto';
+  audio.volume = volume;
+  return audio;
 }
 
-function setMusicVolume(level) {
-  if (!ceremonyMusic) return;
-  ceremonyMusic.volume = Math.max(0, Math.min(1, level));
+function initCeremonyMusic() {
+  if (!chargeMusic) {
+    chargeMusic = createMusicTrack('/assets/inaugural-charge.mp3', {
+      loop: true,
+      volume: MUSIC_IDLE_VOLUME
+    });
+  }
+  if (!revealMusic) {
+    revealMusic = createMusicTrack('/assets/inaugural-reveal.mp3', {
+      loop: true,
+      volume: MUSIC_REVEAL_VOLUME
+    });
+  }
+}
+
+function setChargeVolume(level) {
+  if (!chargeMusic) return;
+  chargeMusic.volume = Math.max(0, Math.min(1, level));
+}
+
+function markMusicEnabled() {
+  musicStarted = true;
+  const btn = document.getElementById('enable-music-btn');
+  if (btn) {
+    btn.textContent = 'Ceremony music on';
+    btn.classList.add('enabled');
+  }
 }
 
 async function startCeremonyMusic(volume = MUSIC_IDLE_VOLUME) {
   initCeremonyMusic();
-  setMusicVolume(volume);
+  // Pooling / charging: low-pitch first half only
+  if (revealMusic) {
+    revealMusic.pause();
+    revealMusic.currentTime = 0;
+  }
+  revealMusicPlaying = false;
+  setChargeVolume(volume);
   try {
     if (audioCtx && audioCtx.state === 'suspended') {
       await audioCtx.resume();
     }
-    await ceremonyMusic.play();
-    musicStarted = true;
-    const btn = document.getElementById('enable-music-btn');
-    if (btn) {
-      btn.textContent = 'Ceremony music on';
-      btn.classList.add('enabled');
-    }
+    await chargeMusic.play();
+    markMusicEnabled();
   } catch (err) {
     console.warn('[Audio] Ceremony music blocked until user gesture:', err);
   }
 }
 
 function stopCeremonyMusic() {
-  if (!ceremonyMusic) return;
-  ceremonyMusic.pause();
-  ceremonyMusic.currentTime = 0;
-  setMusicVolume(MUSIC_IDLE_VOLUME);
+  if (chargeMusic) {
+    chargeMusic.pause();
+    chargeMusic.currentTime = 0;
+    setChargeVolume(MUSIC_IDLE_VOLUME);
+  }
+  if (revealMusic) {
+    revealMusic.pause();
+    revealMusic.currentTime = 0;
+  }
   musicStarted = false;
+  revealMusicPlaying = false;
 }
 
 function playRevealFanfare() {
   initCeremonyMusic();
-  // Restart the regal brass fanfare at the moment of inauguration
-  ceremonyMusic.currentTime = 0;
-  setMusicVolume(MUSIC_REVEAL_VOLUME);
-  ceremonyMusic.play().catch(() => {});
-  musicStarted = true;
+
+  // Fade out / stop the low-pitch pooling bed
+  if (chargeMusic) {
+    chargeMusic.pause();
+    chargeMusic.currentTime = 0;
+  }
+
+  // Inauguration moment: higher-pitch second half
+  revealMusic.currentTime = 0;
+  revealMusic.volume = MUSIC_REVEAL_VOLUME;
+  revealMusic.play().catch(() => {});
+  revealMusicPlaying = true;
+  markMusicEnabled();
 }
 
 function initAudio() {
@@ -851,11 +888,11 @@ socket.on('energy-update', (data) => {
 
   targetProgress = data.progress;
 
-  // Soft ceremonial music while guests charge the stage
+  // Soft low-pitch bed while guests charge the stage
   if (!musicStarted) {
     startCeremonyMusic(MUSIC_CHARGE_VOLUME);
-  } else if (ceremonyMusic && !isRevealed) {
-    setMusicVolume(MUSIC_CHARGE_VOLUME);
+  } else if (chargeMusic && !isRevealed && !revealMusicPlaying) {
+    setChargeVolume(MUSIC_CHARGE_VOLUME);
   }
 
   // Update HUD
