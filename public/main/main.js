@@ -1141,12 +1141,14 @@ function triggerRevealSequence() {
     ease: 'power2.out'
   }, '<');
 
-  // Fade out HUD + corner QR during full-page expansion for a clean presentation
+  // Fade out HUD + corner QR + side logos during full-page expansion
   revealTimeline.call(() => {
     document.getElementById('hud').classList.add('hidden');
     const qrOverlay = document.getElementById('qr-overlay');
     qrOverlay.classList.add('hidden');
     qrOverlay.classList.remove('docked');
+    const brands = document.querySelector('.stage-brands');
+    if (brands) brands.classList.add('hidden');
   }, null, '-=1.5');
 
   // Phase 10: Subtle breathing float in full-screen view
