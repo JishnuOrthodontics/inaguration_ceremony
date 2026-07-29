@@ -2,14 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Inauguration Controller — Biomechanics Unveiled 2.0</title>
   <meta name="description" content="Tap to charge the inauguration energy">
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-  <!-- Import Map MUST be in head -->
   <script type="importmap">
   {
     "imports": {
@@ -21,17 +23,19 @@
 </head>
 <body>
 
-  <!-- Three.js Canvas -->
+  <!-- Optional 3D backdrop -->
   <canvas id="controller-canvas"></canvas>
 
-  <!-- Status Overlay -->
+  <!-- Full-screen tap catcher — always works, even if 3D fails -->
+  <button type="button" id="tap-surface" aria-label="Tap to charge inauguration energy"></button>
+
+  <!-- Status Overlay (visual only — does not block taps) -->
   <div id="status-overlay">
     <div class="event-badge">
       <span class="badge-icon">⚡</span>
       BIOMECHANICS UNVEILED 2.0
     </div>
 
-    <!-- Circular Progress Ring -->
     <div class="progress-ring-container">
       <svg class="progress-ring" viewBox="0 0 200 200">
         <circle class="progress-ring-bg" cx="100" cy="100" r="90" />
@@ -47,13 +51,11 @@
     <p id="tap-count" class="tap-count">0 / 50</p>
   </div>
 
-  <!-- Tap Instruction (pulses on idle) -->
   <div id="tap-prompt" class="tap-prompt">
     <div class="tap-icon">👆</div>
     <span>TAP TO BEGIN</span>
   </div>
 
-  <!-- Revealed Screen -->
   <div id="revealed-screen" class="revealed-screen hidden">
     <div class="revealed-content">
       <div class="celebration-emoji">🎉</div>
@@ -61,15 +63,21 @@
       <h2>Biomechanics Unveiled 2.0</h2>
       <p>National Workshop — Mastering the Art of Tooth Movement</p>
       <p class="revealed-subtitle">Malabar Dental College & Research Centre</p>
-      <a href="/assets/brochure.jpg" target="_blank" class="view-brochure-btn">
+      <a href="/assets/brochure.jpg" target="_blank" rel="noopener" class="view-brochure-btn">
         View Brochure
       </a>
     </div>
   </div>
 
-  <!-- Scripts -->
+  <!-- Core first (taps + socket). 3D is optional enhancement. -->
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-  <script type="module" src="controller.js"></script>
+  <script src="controller-core.js"></script>
+  <script type="module">
+    import('./controller.js').catch((err) => {
+      console.warn('[Controller] 3D visuals unavailable — taps still work.', err);
+      document.body.classList.add('no-3d');
+    });
+  </script>
 
 </body>
 </html>
