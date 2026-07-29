@@ -24,12 +24,35 @@ const HOST = process.env.HOST || '0.0.0.0';
 // ─── Session State ───────────────────────────────────────────────────────────
 
 const sessions = {};
+const codesToSessionId = {}; // "48291" → session id
 let activeSessionId = null;
+
+function generateJoinCode() {
+  // 5-digit code, never leading-zero ambiguity (10000–99999)
+  for (let attempt = 0; attempt < 50; attempt++) {
+    const code = String(Math.floor(10000 + Math.random() * 90000));
+    if (!codesToSessionId[code]) return code;
+  }
+  // Extremely unlikely collision fallback
+  return String(Date.now()).slice(-5);
+}
+
+function ensureJoinCode(session) {
+  if (session.code && codesToSessionId[session.code] === session.id) {
+    return session.code;
+  }
+  const code = generateJoinCode();
+  session.code = code;
+  codesToSessionId[code] = session.id;
+  return code;
+}
 
 function createSession(targetTaps = 50) {
   const id = 'BU2-' + uuidv4().slice(0, 8).toUpperCase();
+  const code = generateJoinCode();
   sessions[id] = {
     id,
+    code,
     tapCount: 0,
     targetTaps,
     progress: 0,
@@ -38,9 +61,28 @@ function createSession(targetTaps = 50) {
     lastTapTime: 0,
     createdAt: Date.now()
   };
+  codesToSessionId[code] = id;
   activeSessionId = id;
-  console.log(`[Session] Created: ${id} (target: ${targetTaps} taps)`);
+  console.log(`[Session] Created: ${id} (code: ${code}, target: ${targetTaps} taps)`);
   return sessions[id];
+}
+
+function findSessionByCode(raw) {
+  if (!raw) return null;
+  const cleaned = raw.toString().trim().toUpperCase().replace(/\s+/g, '');
+
+  // Prefer 5-digit numeric join codes
+  const digits = cleaned.replace(/\D/g, '');
+  if (digits.length === 5 && codesToSessionId[digits]) {
+    return sessions[codesToSessionId[digits]] || null;
+  }
+
+  // Legacy / advanced: full session id still works
+  if (sessions[cleaned]) return sessions[cleaned];
+  const withPrefix = cleaned.startsWith('BU2-') ? cleaned : `BU2-${cleaned}`;
+  if (sessions[withPrefix]) return sessions[withPrefix];
+
+  return null;
 }
 
 function getOrCreateSession() {
@@ -80,10 +122,13 @@ app.get('/api/session', (req, res) => {
 app.get('/api/qr/:sessionId', async (req, res) => {
   try {
     const { sessionId } = req.params;
+    const session = sessions[sessionId] || getOrCreateSession();
+    const code = ensureJoinCode(session);
+
     // Build the controller URL — use the request's host header for flexibility
     const protocol = req.headers['x-forwarded-proto'] || req.protocol;
     const host = req.headers['x-forwarded-host'] || req.headers.host;
-    const controllerUrl = `${protocol}://${host}/controller/?room=${sessionId}`;
+    const controllerUrl = `${protocol}://${host}/controller/?room=${session.id}`;
     const joinPageUrl = `${protocol}://${host}/join/`;
 
     const qrDataUrl = await QRCode.toDataURL(controllerUrl, {
@@ -99,7 +144,7 @@ app.get('/api/qr/:sessionId', async (req, res) => {
     res.json({
       qr: qrDataUrl,
       url: controllerUrl,
-      code: sessionId,
+      code,
       joinUrl: joinPageUrl
     });
   } catch (err) {
@@ -110,18 +155,13 @@ app.get('/api/qr/:sessionId', async (req, res) => {
 
 // Resolve a typed join code → controller URL (or active session if no code)
 app.get('/api/join/resolve', (req, res) => {
-  const raw = (req.query.code || '').toString().trim().toUpperCase().replace(/\s+/g, '');
+  const raw = (req.query.code || '').toString().trim();
   const protocol = req.headers['x-forwarded-proto'] || req.protocol;
   const host = req.headers['x-forwarded-host'] || req.headers.host;
 
   let session = null;
   if (raw) {
-    if (sessions[raw]) {
-      session = sessions[raw];
-    } else {
-      const withPrefix = raw.startsWith('BU2-') ? raw : `BU2-${raw}`;
-      if (sessions[withPrefix]) session = sessions[withPrefix];
-    }
+    session = findSessionByCode(raw);
     if (!session) {
       return res.status(404).json({ error: 'Code not found — check the big screen' });
     }
@@ -129,10 +169,11 @@ app.get('/api/join/resolve', (req, res) => {
     session = getOrCreateSession();
   }
 
+  ensureJoinCode(session);
   const controllerUrl = `${protocol}://${host}/controller/?room=${session.id}`;
   res.json({
     sessionId: session.id,
-    code: session.id,
+    code: session.code,
     url: controllerUrl
   });
 });

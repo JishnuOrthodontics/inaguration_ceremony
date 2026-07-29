@@ -25,7 +25,7 @@ Hosted on **Render** (free web service). Auto-deploys on push to `main`.
 
 1. **Projector** opens `/main/` — 3D theater stage with full-screen QR (“SCAN TO INAUGURATE”).
 2. **Delegates** scan the QR → phone opens `/controller/?room={sessionId}`.
-3. **Can't scan?** Use the **code** under the QR, or open **`/join`** on the phone (enter code, or tap “Join live ceremony”).
+3. **Can't scan?** Use the **5-digit code** under the QR, or open **`/join`** on the phone (enter the code, or tap “Join live ceremony”).
 4. **First tap** starts the stage ceremony: energy HUD appears, curtains begin opening, and the QR **docks to a corner** (still showing code + `/join`) so late guests can join.
 5. **All phones share one pool** — every later joiner’s taps still count toward the same target.
 6. When **total taps ≥ target** (default **50**), the stage runs the reveal sequence; the corner QR hides for a clean brochure moment.
@@ -173,8 +173,8 @@ Use a phone hotspot if college Wi‑Fi blocks device-to-device traffic.
 | `GET` | `/` | Redirect to `/main/` |
 | `GET` | `/health` · `/healthz` | Liveness |
 | `GET` | `/api/session` | Get or create the active session |
-| `GET` | `/api/qr/:sessionId` | QR data URL + controller URL + join code |
-| `GET` | `/api/join/resolve?code=` | Resolve typed code (or active session) → controller URL |
+| `GET` | `/api/qr/:sessionId` | QR + controller URL + **5-digit** join code |
+| `GET` | `/api/join/resolve?code=` | Resolve 5-digit code (or active session) → controller URL |
 
 ### Admin (no auth)
 
@@ -191,6 +191,7 @@ Use a phone hotspot if college Wi‑Fi blocks device-to-device traffic.
 ```js
 {
   id: "BU2-A1B2C3D4",
+  code: "48291",        // 5-digit join code shown on screen
   tapCount: 0,
   targetTaps: 50,
   progress: 0,          // 0–1

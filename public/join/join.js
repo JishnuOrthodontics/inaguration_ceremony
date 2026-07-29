@@ -35,9 +35,9 @@
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
-    const code = (input.value || '').trim();
-    if (!code) {
-      setStatus('Enter the code shown on the big screen', 'error');
+    const code = (input.value || '').trim().replace(/\D/g, '');
+    if (code.length !== 5) {
+      setStatus('Enter the 5-digit code from the big screen', 'error');
       input.focus();
       return;
     }
@@ -48,9 +48,14 @@
     resolveAndGo('');
   });
 
+  // Digits only while typing
+  input.addEventListener('input', () => {
+    input.value = input.value.replace(/\D/g, '').slice(0, 5);
+  });
+
   // Prefill from ?code= if present
   const prefill = new URLSearchParams(window.location.search).get('code');
   if (prefill) {
-    input.value = prefill.toUpperCase();
+    input.value = prefill.replace(/\D/g, '').slice(0, 5);
   }
 })();

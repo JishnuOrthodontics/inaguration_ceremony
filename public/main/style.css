@@ -116,8 +116,13 @@ body {
 }
 
 .overlay.docked .join-code-line {
-  font-size: 0.7rem;
-  letter-spacing: 0.06em;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+}
+
+.overlay.docked #join-code {
+  letter-spacing: 0.22em;
+  font-size: 1.05em;
 }
 
 .overlay.docked .join-link-line {
@@ -259,7 +264,8 @@ body {
 #join-code {
   font-family: 'Courier New', Courier, monospace;
   color: #fff;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.28em;
+  font-size: 1.15em;
 }
 
 .join-link-line {

@@ -75,10 +75,10 @@ h1 {
   border: 1px solid rgba(201, 162, 39, 0.28);
   background: rgba(0, 0, 0, 0.35);
   color: #fff;
-  font-size: 1.05rem;
+  font-size: 1.35rem;
   font-family: 'Courier New', Courier, monospace;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  letter-spacing: 0.35em;
+  text-align: center;
   outline: none;
 }
 

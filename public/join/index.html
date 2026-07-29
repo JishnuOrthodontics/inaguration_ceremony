@@ -16,17 +16,17 @@
     <p class="lede">Can't scan the QR? Enter the code from the screen, or join the live room in one tap.</p>
 
     <form id="join-form" class="join-form" autocomplete="off">
-      <label for="code-input">Ceremony code</label>
+      <label for="code-input">5-digit code</label>
       <input
         id="code-input"
         name="code"
         type="text"
-        inputmode="text"
-        autocapitalize="characters"
+        inputmode="numeric"
+        pattern="[0-9]*"
         autocomplete="off"
         spellcheck="false"
-        placeholder="e.g. BU2-A1B2C3D4"
-        maxlength="20"
+        placeholder="e.g. 48291"
+        maxlength="5"
       />
       <button type="submit" class="btn-primary">Join with code</button>
     </form>
