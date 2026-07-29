@@ -46,6 +46,8 @@ Joining alone does not start motion on the big screen — the **first tap** does
 | `/assets/brochure.jpg` | Stage reveal texture (logo image) |
 | `/assets/Biomechanics-Unveiled-2.0-Brochure.pdf` | Downloadable brochure (View Brochure button) |
 | `/assets/inaugural-fanfare.mp3` | Built-in inaugural ceremony music (projector) |
+| `/assets/dept-orthodontics-logo.png` | Left stage wing — Dept of Orthodontics |
+| `/assets/malabar-dental-college-logo.png` | Right stage wing — Malabar Dental College |
 | `/vendor/socket.io.min.js` | Local Socket.io client (no CDN) |
 | `/health` · `/healthz` | Health checks for Render |
 

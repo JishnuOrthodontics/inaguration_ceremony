@@ -38,6 +38,56 @@ body {
   z-index: 1;
 }
 
+/* ─── Side brand logos (outside curtains) ─────────────────────── */
+
+.stage-brands {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+}
+
+.stage-brand {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: clamp(110px, 14vw, 200px);
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 28px rgba(0, 0, 0, 0.55));
+  /* Black logo canvases blend into the dark stage wings */
+  mix-blend-mode: screen;
+  opacity: 0.95;
+  animation: brandIn 1.2s ease-out both;
+}
+
+.stage-brand-left {
+  left: clamp(12px, 2.2vw, 36px);
+  animation-delay: 0.15s;
+}
+
+.stage-brand-right {
+  right: clamp(12px, 2.2vw, 36px);
+  animation-delay: 0.3s;
+}
+
+@keyframes brandIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) scale(0.92);
+  }
+  to {
+    opacity: 0.95;
+    transform: translateY(-50%) scale(1);
+  }
+}
+
+@media (max-aspect-ratio: 4/3) {
+  .stage-brand {
+    width: clamp(72px, 11vw, 140px);
+  }
+}
+
 /* ─── QR Overlay ──────────────────────────────────────────────── */
 
 .overlay {
