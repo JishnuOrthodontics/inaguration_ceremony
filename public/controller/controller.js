@@ -304,11 +304,28 @@ function playRevealSound() {
 
 // ─── Socket.io Connection ────────────────────────────────────────────────────
 
-const socket = io();
+const socket = io({
+  transports: ['websocket', 'polling'],
+  reconnection: true,
+  reconnectionAttempts: Infinity
+});
+
+let activeRoomId = roomId;
+
+function joinRoom(id) {
+  if (!id) return;
+  activeRoomId = id;
+  socket.emit('join-session', id);
+}
 
 if (roomId) {
-  socket.emit('join-session', roomId);
+  joinRoom(roomId);
 }
+
+socket.on('connect', () => {
+  // Re-join after Render wake / network blip
+  if (activeRoomId) joinRoom(activeRoomId);
+});
 
 // Handle energy updates
 socket.on('energy-update', (data) => {
@@ -324,11 +341,36 @@ socket.on('state-update', (data) => {
   targetTaps = data.targetTaps || 50;
   isRevealed = data.isRevealed;
 
+  const statusEl = document.getElementById('status-text');
+  statusEl.style.color = '';
+  if (!isRevealed && !hasStartedTapping) {
+    statusEl.textContent = 'Tap anywhere to charge';
+  }
+
   updateProgressUI(data.progress, tapCount);
 
   if (isRevealed) {
     showRevealedScreen();
   }
+});
+
+// Server moved us to the live room (old QR / post-restart)
+socket.on('session-redirect', (data) => {
+  if (!data?.sessionId) return;
+  activeRoomId = data.sessionId;
+  const url = new URL(window.location.href);
+  url.searchParams.set('room', data.sessionId);
+  window.history.replaceState({}, '', url);
+
+  const statusEl = document.getElementById('status-text');
+  statusEl.textContent = data.message || 'Connected to live session';
+  statusEl.style.color = '#86efac';
+  setTimeout(() => {
+    if (!hasStartedTapping && !isRevealed) {
+      statusEl.textContent = 'Tap anywhere to charge';
+      statusEl.style.color = '';
+    }
+  }, 2000);
 });
 
 // Handle reveal
@@ -353,6 +395,7 @@ socket.on('reset', () => {
   document.getElementById('revealed-screen').classList.add('hidden');
   document.getElementById('tap-prompt').classList.remove('hidden');
   document.getElementById('status-text').textContent = 'Tap anywhere to charge';
+  document.getElementById('status-text').style.color = '';
 });
 
 // Handle errors
@@ -360,6 +403,11 @@ socket.on('error', (data) => {
   document.getElementById('status-text').textContent = data.message;
   document.getElementById('status-text').style.color = '#ff4444';
 });
+
+// Tap handler uses activeRoomId (may change after redirect)
+function getRoomId() {
+  return activeRoomId;
+}
 
 // ─── UI Updates ──────────────────────────────────────────────────────────────
 
@@ -423,7 +471,7 @@ let lastTapEmitAt = 0;
 
 function handleTap(event) {
   if (isRevealed) return;
-  if (!roomId) return;
+  if (!getRoomId()) return;
 
   // Ignore non-primary mouse/pen buttons
   if (typeof event.button === 'number' && event.button !== 0) return;

@@ -185,19 +185,26 @@ io.on('connection', (socket) => {
   console.log(`[Socket] Connected: ${socket.id}`);
 
   // Client joins a session room
-  socket.on('join-session', (sessionId) => {
-    // Validate session exists
-    if (!sessions[sessionId]) {
-      socket.emit('error', { message: 'Session not found' });
-      return;
+  socket.on('join-session', (requestedId) => {
+    let session = requestedId && sessions[requestedId] ? sessions[requestedId] : null;
+
+    // After Render sleep/redeploy, in-memory rooms are gone.
+    // Fall back to (or create) the active session so phones keep working.
+    if (!session) {
+      session = getOrCreateSession();
+      console.log(
+        `[Socket] Session ${requestedId || '(none)'} missing — joining active ${session.id}`
+      );
+      socket.emit('session-redirect', {
+        sessionId: session.id,
+        message: 'Session refreshed — joined the live room'
+      });
     }
 
-    socket.join(sessionId);
-    socket.sessionId = sessionId;
-    sessions[sessionId].connectedClients++;
+    socket.join(session.id);
+    socket.sessionId = session.id;
+    session.connectedClients++;
 
-    // Send current state to the new client
-    const session = sessions[sessionId];
     socket.emit('state-update', {
       tapCount: session.tapCount,
       progress: session.progress,
@@ -205,12 +212,11 @@ io.on('connection', (socket) => {
       targetTaps: session.targetTaps
     });
 
-    // Broadcast updated client count
-    io.to(sessionId).emit('client-count', {
+    io.to(session.id).emit('client-count', {
       count: session.connectedClients
     });
 
-    console.log(`[Socket] ${socket.id} joined session ${sessionId} (${session.connectedClients} clients)`);
+    console.log(`[Socket] ${socket.id} joined session ${session.id} (${session.connectedClients} clients)`);
   });
 
   // Handle tap events from mobile controllers

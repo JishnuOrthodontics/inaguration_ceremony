@@ -727,7 +727,11 @@ function playCurtainRustle() {
 
 // ─── Socket.io Connection ────────────────────────────────────────────────────
 
-const socket = io();
+const socket = io({
+  transports: ['websocket', 'polling'],
+  reconnection: true,
+  reconnectionAttempts: Infinity
+});
 
 async function initSession() {
   try {
@@ -751,6 +755,11 @@ async function initSession() {
     console.error('[Session] Failed to initialize:', err);
   }
 }
+
+// After Render sleep/redeploy, refresh session + QR so phones match the stage
+socket.on('connect', () => {
+  initSession();
+});
 
 // Handle energy updates from server
 socket.on('energy-update', (data) => {
@@ -1121,7 +1130,7 @@ window.addEventListener('resize', () => {
 
 // ─── Initialize ──────────────────────────────────────────────────────────────
 
-initSession();
+// initSession runs on socket 'connect' (including first connect)
 animate();
 
 // Initialize audio on any click/touch (required by browser autoplay policy)
