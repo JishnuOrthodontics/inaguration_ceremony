@@ -463,3 +463,32 @@ body {
   0%, 100% { box-shadow: 0 0 10px rgba(201, 162, 39, 0.3); }
   50% { box-shadow: 0 0 20px rgba(201, 162, 39, 0.65); }
 }
+
+/* ─── Powered-by credit ───────────────────────────────────────── */
+
+.powered-by {
+  position: fixed;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  z-index: 55;
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  color: rgba(245, 239, 230, 0.38);
+  white-space: nowrap;
+  pointer-events: auto;
+  cursor: default;
+}
+
+.powered-by a {
+  color: rgba(232, 213, 163, 0.55);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.powered-by a:hover {
+  color: rgba(240, 193, 77, 0.85);
+  text-decoration: underline;
+}
