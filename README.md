@@ -43,7 +43,8 @@ Joining alone does not start motion on the big screen — the **first tap** does
 | `/controller/?room={id}` | Mobile tap controller |
 | `/join/` | Join without QR (enter code or join live) |
 | `/admin/` | Operator control panel |
-| `/assets/brochure.jpg` | Revealed brochure image |
+| `/assets/brochure.jpg` | Stage reveal texture (logo image) |
+| `/assets/Biomechanics-Unveiled-2.0-Brochure.pdf` | Downloadable brochure (View Brochure button) |
 | `/vendor/socket.io.min.js` | Local Socket.io client (no CDN) |
 | `/health` · `/healthz` | Health checks for Render |
 
