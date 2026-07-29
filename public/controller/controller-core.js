@@ -113,155 +113,179 @@
   }
 
   // ── Socket ─────────────────────────────────────────────────────────────
-  if (typeof io !== 'function') {
-    statusText.textContent = 'Connection library failed to load — check internet';
-    statusText.style.color = '#ff4444';
-    return;
-  }
+  function startSocket() {
+    if (typeof io !== 'function') {
+      statusText.textContent = 'Connection library failed to load — check internet';
+      statusText.style.color = '#ff4444';
+      return;
+    }
 
-  const socket = io({
-    transports: ['websocket', 'polling'],
-    reconnection: true,
-    reconnectionAttempts: Infinity
-  });
+    const socket = io({
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionAttempts: Infinity,
+      path: '/socket.io'
+    });
 
-  function joinRoom(id) {
-    if (!id) return;
-    activeRoomId = id;
-    socket.emit('join-session', id);
-  }
+    function joinRoom(id) {
+      if (!id) return;
+      activeRoomId = id;
+      socket.emit('join-session', id);
+    }
 
-  socket.on('connect', () => {
+    socket.on('connect', () => {
+      if (activeRoomId) joinRoom(activeRoomId);
+    });
+
     if (activeRoomId) joinRoom(activeRoomId);
-  });
 
-  if (activeRoomId) joinRoom(activeRoomId);
+    socket.on('energy-update', (data) => {
+      targetProgress = data.progress;
+      progress = data.progress;
+      tapCount = data.tapCount;
+      updateProgressUI(data.progress, data.tapCount);
+      emitVisual('inaug:progress', { progress: data.progress, tapCount: data.tapCount });
+    });
 
-  socket.on('energy-update', (data) => {
-    targetProgress = data.progress;
-    progress = data.progress;
-    tapCount = data.tapCount;
-    updateProgressUI(data.progress, data.tapCount);
-    emitVisual('inaug:progress', { progress: data.progress, tapCount: data.tapCount });
-  });
+    socket.on('state-update', (data) => {
+      targetProgress = data.progress;
+      progress = data.progress;
+      tapCount = data.tapCount || 0;
+      targetTaps = data.targetTaps || 50;
+      isRevealed = !!data.isRevealed;
 
-  socket.on('state-update', (data) => {
-    targetProgress = data.progress;
-    progress = data.progress;
-    tapCount = data.tapCount || 0;
-    targetTaps = data.targetTaps || 50;
-    isRevealed = !!data.isRevealed;
-
-    statusText.style.color = '';
-    if (!isRevealed && !hasStartedTapping) {
-      statusText.textContent = 'Tap anywhere to charge';
-    }
-
-    updateProgressUI(data.progress, tapCount);
-    emitVisual('inaug:progress', { progress: data.progress, tapCount });
-
-    if (isRevealed) showRevealedScreen();
-  });
-
-  socket.on('session-redirect', (data) => {
-    if (!data || !data.sessionId) return;
-    activeRoomId = data.sessionId;
-    const url = new URL(window.location.href);
-    url.searchParams.set('room', data.sessionId);
-    window.history.replaceState({}, '', url);
-    statusText.textContent = data.message || 'Connected to live session';
-    statusText.style.color = '#86efac';
-    setTimeout(() => {
-      if (!hasStartedTapping && !isRevealed) {
+      statusText.style.color = '';
+      if (!isRevealed && !hasStartedTapping) {
         statusText.textContent = 'Tap anywhere to charge';
-        statusText.style.color = '';
       }
-    }, 2000);
-  });
 
-  socket.on('revealed', () => {
-    isRevealed = true;
-    playRevealSound();
-    emitVisual('inaug:reveal', {});
-    setTimeout(showRevealedScreen, 1200);
-  });
+      updateProgressUI(data.progress, tapCount);
+      emitVisual('inaug:progress', { progress: data.progress, tapCount });
 
-  socket.on('reset', () => {
-    isRevealed = false;
-    targetProgress = 0;
-    progress = 0;
-    tapCount = 0;
-    consecutiveTaps = 0;
-    hasStartedTapping = false;
-    updateProgressUI(0, 0);
-    revealedScreen.classList.add('hidden');
-    if (tapSurface) tapSurface.style.pointerEvents = 'auto';
-    tapPrompt.classList.remove('hidden');
-    statusText.textContent = 'Tap anywhere to charge';
-    statusText.style.color = '';
-    emitVisual('inaug:reset', {});
-  });
+      if (isRevealed) showRevealedScreen();
+    });
 
-  socket.on('error', (data) => {
-    statusText.textContent = (data && data.message) || 'Connection error';
-    statusText.style.color = '#ff4444';
-  });
+    socket.on('session-redirect', (data) => {
+      if (!data || !data.sessionId) return;
+      activeRoomId = data.sessionId;
+      const url = new URL(window.location.href);
+      url.searchParams.set('room', data.sessionId);
+      window.history.replaceState({}, '', url);
+      statusText.textContent = data.message || 'Connected to live session';
+      statusText.style.color = '#86efac';
+      setTimeout(() => {
+        if (!hasStartedTapping && !isRevealed) {
+          statusText.textContent = 'Tap anywhere to charge';
+          statusText.style.color = '';
+        }
+      }, 2000);
+    });
 
-  // ── Taps (full-screen layer — works even if 3D never loads) ─────────────
-  function handleTap(event) {
-    if (isRevealed) return;
-    if (!activeRoomId) return;
-    if (typeof event.button === 'number' && event.button !== 0) return;
+    socket.on('revealed', () => {
+      isRevealed = true;
+      playRevealSound();
+      emitVisual('inaug:reveal', {});
+      setTimeout(showRevealedScreen, 1200);
+    });
 
-    const now = Date.now();
-    if (now - lastTapEmitAt < 50) return;
-    lastTapEmitAt = now;
+    socket.on('reset', () => {
+      isRevealed = false;
+      targetProgress = 0;
+      progress = 0;
+      tapCount = 0;
+      consecutiveTaps = 0;
+      hasStartedTapping = false;
+      updateProgressUI(0, 0);
+      revealedScreen.classList.add('hidden');
+      if (tapSurface) tapSurface.style.pointerEvents = 'auto';
+      tapPrompt.classList.remove('hidden');
+      statusText.textContent = 'Tap anywhere to charge';
+      statusText.style.color = '';
+      emitVisual('inaug:reset', {});
+    });
 
-    if (event.cancelable) event.preventDefault();
+    socket.on('error', (data) => {
+      statusText.textContent = (data && data.message) || 'Connection error';
+      statusText.style.color = '#ff4444';
+    });
 
-    initAudio();
+    // Wire taps after socket exists
+    wireTaps(socket);
+  }
 
-    if (now - lastTapTime > 500) consecutiveTaps = 0;
-    consecutiveTaps++;
-    lastTapTime = now;
+  function wireTaps(socket) {
+    function handleTap(event) {
+      if (isRevealed) return;
+      if (!activeRoomId) return;
+      if (typeof event.button === 'number' && event.button !== 0) return;
 
-    if (!hasStartedTapping) {
-      hasStartedTapping = true;
-      tapPrompt.classList.add('hidden');
+      const now = Date.now();
+      if (now - lastTapEmitAt < 50) return;
+      lastTapEmitAt = now;
+
+      if (event.cancelable) event.preventDefault();
+
+      initAudio();
+
+      if (now - lastTapTime > 500) consecutiveTaps = 0;
+      consecutiveTaps++;
+      lastTapTime = now;
+
+      if (!hasStartedTapping) {
+        hasStartedTapping = true;
+        tapPrompt.classList.add('hidden');
+      }
+
+      socket.emit('tap');
+      playTapSound();
+
+      if (navigator.vibrate) navigator.vibrate(10);
+
+      const point = event.touches && event.touches[0]
+        || event.changedTouches && event.changedTouches[0]
+        || event;
+      const x = point.clientX != null ? point.clientX : window.innerWidth / 2;
+      const y = point.clientY != null ? point.clientY : window.innerHeight / 2;
+      spawnRipple(x, y);
+
+      emitVisual('inaug:tap', { x, y, progress, consecutiveTaps });
     }
 
-    socket.emit('tap');
-    playTapSound();
+    function onPointerDown(e) { handleTap(e); }
+    function onTouchStart(e) {
+      if (window.PointerEvent) return;
+      handleTap(e);
+    }
 
-    if (navigator.vibrate) navigator.vibrate(10);
-
-    const point = event.touches && event.touches[0]
-      || event.changedTouches && event.changedTouches[0]
-      || event;
-    const x = point.clientX != null ? point.clientX : window.innerWidth / 2;
-    const y = point.clientY != null ? point.clientY : window.innerHeight / 2;
-    spawnRipple(x, y);
-
-    emitVisual('inaug:tap', { x, y, progress, consecutiveTaps });
+    const surface = tapSurface || document.body;
+    surface.addEventListener('pointerdown', onPointerDown, { passive: false });
+    surface.addEventListener('touchstart', onTouchStart, { passive: false });
+    if (tapSurface) {
+      document.body.addEventListener('pointerdown', (e) => {
+        if (e.target === tapSurface) return;
+        if (e.target && e.target.closest && e.target.closest('a,button')) return;
+        onPointerDown(e);
+      }, { passive: false });
+    }
   }
 
-  function onPointerDown(e) { handleTap(e); }
-  function onTouchStart(e) {
-    if (window.PointerEvent) return;
-    handleTap(e);
+  function ensureIoThenStart() {
+    if (typeof io === 'function') {
+      startSocket();
+      return;
+    }
+    // Fallback: inject local vendor script if CDN/tag failed
+    const s = document.createElement('script');
+    s.src = '/vendor/socket.io.min.js';
+    s.onload = () => startSocket();
+    s.onerror = () => {
+      statusText.textContent = 'Connection library failed to load — refresh and try again';
+      statusText.style.color = '#ff4444';
+    };
+    document.head.appendChild(s);
   }
 
-  const surface = tapSurface || document.body;
-  surface.addEventListener('pointerdown', onPointerDown, { passive: false });
-  surface.addEventListener('touchstart', onTouchStart, { passive: false });
-  // Also catch taps that miss the button on odd mobile WebViews
-  if (tapSurface) {
-    document.body.addEventListener('pointerdown', (e) => {
-      if (e.target === tapSurface) return; // already handled
-      if (e.target && e.target.closest && e.target.closest('a,button')) return;
-      onPointerDown(e);
-    }, { passive: false });
-  }
+  ensureIoThenStart();
 
   // Shared state for optional 3D module
   window.InaugController = {

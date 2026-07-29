@@ -69,8 +69,8 @@
     </div>
   </div>
 
-  <!-- Core first (taps + socket). 3D is optional enhancement. -->
-  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <!-- Core first (taps + socket). Local vendor — no CDN dependency. -->
+  <script src="/vendor/socket.io.min.js"></script>
   <script src="controller-core.js"></script>
   <script type="module">
     import('./controller.js').catch((err) => {
