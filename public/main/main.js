@@ -773,8 +773,10 @@ socket.on('energy-update', (data) => {
   energyFill.style.width = `${Math.round(data.progress * 100)}%`;
   energyText.textContent = `${Math.round(data.progress * 100)}%`;
 
-  // Show HUD, hide QR overlay on first tap
-  document.getElementById('qr-overlay').classList.add('hidden');
+  // Show HUD; dock QR to corner so late guests can still scan
+  const qrOverlay = document.getElementById('qr-overlay');
+  qrOverlay.classList.remove('hidden');
+  qrOverlay.classList.add('docked');
   document.getElementById('hud').classList.remove('hidden');
 
   // Play curtain rustle sound occasionally
@@ -815,8 +817,9 @@ socket.on('reset', () => {
   document.getElementById('energy-bar-fill').style.width = '0%';
   document.getElementById('energy-text').textContent = '0%';
 
-  // Show QR overlay again
-  document.getElementById('qr-overlay').classList.remove('hidden');
+  // Show full-center QR overlay again
+  const qrOverlay = document.getElementById('qr-overlay');
+  qrOverlay.classList.remove('hidden', 'docked');
   document.getElementById('hud').classList.add('hidden');
 
   // Kill any running GSAP timelines
@@ -995,9 +998,12 @@ function triggerRevealSequence() {
     ease: 'power2.out'
   }, '<');
 
-  // Fade out HUD bar during full-page expansion for a clean presentation
+  // Fade out HUD + corner QR during full-page expansion for a clean presentation
   revealTimeline.call(() => {
     document.getElementById('hud').classList.add('hidden');
+    const qrOverlay = document.getElementById('qr-overlay');
+    qrOverlay.classList.add('hidden');
+    qrOverlay.classList.remove('docked');
   }, null, '-=1.5');
 
   // Phase 10: Subtle breathing float in full-screen view

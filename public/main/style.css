@@ -60,6 +60,72 @@ body {
   pointer-events: none;
 }
 
+/* Compact corner QR — stays scannable while charging */
+.overlay.docked {
+  top: auto;
+  left: auto;
+  right: 28px;
+  bottom: 110px;
+  width: auto;
+  height: auto;
+  align-items: flex-end;
+  justify-content: flex-end;
+  background: transparent;
+  z-index: 60;
+  pointer-events: none;
+}
+
+.overlay.docked .qr-card {
+  pointer-events: none;
+  padding: 14px 16px 12px;
+  border-radius: 16px;
+  box-shadow:
+    0 0 28px rgba(138, 6, 26, 0.2),
+    0 12px 32px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(232, 213, 163, 0.08);
+}
+
+.overlay.docked .qr-glow {
+  border-radius: 18px;
+  filter: blur(12px);
+  opacity: 0.55;
+  animation: none;
+}
+
+.overlay.docked .qr-card h2,
+.overlay.docked .qr-subtitle,
+.overlay.docked .waiting-indicator {
+  display: none;
+}
+
+.overlay.docked .qr-dock-label {
+  display: block;
+}
+
+.qr-dock-label {
+  display: none;
+  font-family: 'Cinzel', serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold-soft);
+  margin: 0 0 8px;
+}
+
+.overlay.docked #qr-container {
+  width: 140px;
+  height: 140px;
+  margin: 0 auto;
+  border-radius: 12px;
+}
+
+.overlay.docked #qr-container img {
+  width: 128px;
+  height: 128px;
+}
+
+
 .qr-card {
   position: relative;
   background: var(--stage-glass);

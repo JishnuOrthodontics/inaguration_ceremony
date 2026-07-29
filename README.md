@@ -23,11 +23,11 @@ Hosted on **Render** (free web service). Auto-deploys on push to `main`.
 
 ## Ceremony flow
 
-1. **Projector** opens `/main/` — 3D theater stage with QR overlay (“SCAN TO INAUGURATE”).
+1. **Projector** opens `/main/` — 3D theater stage with full-screen QR (“SCAN TO INAUGURATE”).
 2. **Delegates** scan the QR → phone opens `/controller/?room={sessionId}`.
-3. **First tap** starts the stage ceremony: QR hides, energy HUD appears, curtains begin opening with progress.
+3. **First tap** starts the stage ceremony: energy HUD appears, curtains begin opening, and the QR **docks to a corner** so late guests can still join.
 4. **All phones share one pool** — every later joiner’s taps still count toward the same target.
-5. When **total taps ≥ target** (default **50**), the stage runs the reveal sequence (curtains bunch open, brochure rises, confetti) and phones show the celebration screen with a brochure link.
+5. When **total taps ≥ target** (default **50**), the stage runs the reveal sequence (curtains bunch open, brochure rises, confetti); the corner QR hides for a clean brochure moment.
 
 Joining alone does not start motion on the big screen — the **first tap** does.
 
